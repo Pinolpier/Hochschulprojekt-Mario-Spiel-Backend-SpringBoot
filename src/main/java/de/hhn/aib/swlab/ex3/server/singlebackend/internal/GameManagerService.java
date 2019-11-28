@@ -1,0 +1,183 @@
+package de.hhn.aib.swlab.ex3.server.singlebackend.internal;
+
+import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
+import de.hhn.aib.swlab.ex3.server.singlebackend.external.model.Player;
+import de.hhn.aib.swlab.ex3.server.singlebackend.external.model.impl.MessageImpl;
+import de.hhn.aib.swlab.ex3.server.singlebackend.game.GameMessage;
+import de.hhn.aib.swlab.ex3.server.singlebackend.game.MyGameBackend;
+import de.hhn.aib.swlab.ex3.server.singlebackend.internal.exception.WebSocketException;
+import lombok.extern.log4j.Log4j2;
+import org.springframework.scheduling.TaskScheduler;
+import org.springframework.stereotype.Service;
+import org.springframework.web.socket.TextMessage;
+import org.springframework.web.socket.WebSocketSession;
+
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ScheduledFuture;
+
+@Service
+@Log4j2
+public class GameManagerService {
+
+    private JwtToPlayerConverter jwtToPlayerConverter;
+    private GameBackendProvider gameBackendProvider;
+
+    private Map<String, MyGameBackend> games;
+    private Map<Player, WebSocketSession> playerToWebSocketSession;
+    private Map<WebSocketSession, Player> webSocketSessionToPlayer;
+    private Map<String, ScheduledFuture> backendToScheduledFuture;
+    private List<WebSocketSession> sessionsNotAuthenticated;
+
+    private TaskScheduler taskScheduler;
+    private Gson gson;
+
+
+    public GameManagerService(JwtToPlayerConverter jwtToPlayerConverter, GameBackendProvider gameBackendProvider, TaskScheduler taskScheduler) {
+        this.games = new ConcurrentHashMap<>();
+        this.playerToWebSocketSession = new ConcurrentHashMap<>();
+        this.webSocketSessionToPlayer = new ConcurrentHashMap<>();
+        this.backendToScheduledFuture = new ConcurrentHashMap<>();
+        this.sessionsNotAuthenticated = new CopyOnWriteArrayList<>();
+        this.gameBackendProvider = gameBackendProvider;
+        this.jwtToPlayerConverter = jwtToPlayerConverter;
+        this.taskScheduler = taskScheduler;
+        gson = new Gson();
+    }
+
+
+
+    public void passJoinedMessageToGame(WebSocketSession webSocketSession) {
+        log.info("Connected player with session id {}", webSocketSession.getId());
+        this.sessionsNotAuthenticated.add(webSocketSession);
+    }
+
+    public void passLeftMessageToGame(WebSocketSession webSocketSession) {
+        Player player = this.webSocketSessionToPlayer.get(webSocketSession);
+
+        if (player != null) {
+            log.info("Passing leave message from {} to game {} ", player.getName(), player.getGameId());
+            this.games.get(player.getGameId()).onPlayerLeft(player);
+            this.playerToWebSocketSession.remove(player);
+            this.webSocketSessionToPlayer.remove(webSocketSession);
+
+            long count = playerToWebSocketSession.keySet().stream().filter(p -> p.getGameId().equals(player.getGameId())).count();
+            if (count == 0) {
+                /* todo how to handle the problem, that the game will be recreated
+                * when A joins, leaves, B joins (and A will never rejoin the game)
+                */
+
+                // remove game
+                log.info("There is no more player in game {} - it will be removed", player.getGameId());
+                this.backendToScheduledFuture.get(player.getGameId()).cancel(false);
+                this.backendToScheduledFuture.remove(player.getGameId());
+                this.games.remove(player.getGameId());
+            }
+        }
+        // else: player not really joined the game (e.g. authorization failed)
+        // ignore
+
+    }
+
+    public void passMessageToGame(String message, WebSocketSession webSocketSession) {
+        if (sessionsNotAuthenticated.contains(webSocketSession)) {
+            sessionsNotAuthenticated.remove(webSocketSession);
+            if (message != null && !message.trim().isEmpty()) {
+                try {
+                    GameMessage gameMessage = gson.fromJson(message, GameMessage.class);
+                    if ("LOGIN".equals(gameMessage.getAction()) && gameMessage.getAuthentication() != null) {
+                        Optional<Player> optionalPlayer = jwtToPlayerConverter.getPlayerFromToken(gameMessage.getAuthentication());
+                        if (!optionalPlayer.isPresent()) {
+                            // not a valid player
+                            log.info("Login {} failed, token invalid", webSocketSession.getId());
+                            GameMessage response = new GameMessage();
+                            response.setStatus(GameMessage.Status.FAILED);
+                            webSocketSession.sendMessage(new TextMessage(gson.toJson(response)));
+                            closeWebSocketSession(webSocketSession);
+                        } else {
+                            // player is valid
+                            Player player = optionalPlayer.get();
+                            // relation player to session
+                            this.playerToWebSocketSession.put(player, webSocketSession);
+                            this.webSocketSessionToPlayer.put(webSocketSession, player);
+                        }
+                    } else {
+                        log.warn("Unexpected message while logging in, ignore");
+                    }
+                } catch (JsonSyntaxException | IOException ex) {
+                    log.warn("Invalid json found while joining player to game", ex);
+                }
+
+            } else {
+                log.info("Joining {} failed, token not present", webSocketSession.getId());
+                closeWebSocketSession(webSocketSession);
+            }
+        } else {
+            Player player = this.webSocketSessionToPlayer.get(webSocketSession);
+            if (player == null) {
+                log.info("Player left the game while distributing the message");
+                return;
+            }
+            //
+            if (player.getGameId() != null) {
+                MessageImpl messageImpl = new MessageImpl();
+                messageImpl.setTimeReceived(LocalDateTime.now());
+                messageImpl.setContent(message);
+                messageImpl.setPlayer(player);
+
+                log.debug("Passing message {} from {} to game {}", message, player.getName(), player.getGameId());
+                this.games.get(player.getGameId()).onMessageFromPlayer(messageImpl);
+            } else {
+                try {
+                    GameMessage gameMessage = gson.fromJson(message, GameMessage.class);
+                    if ("JOIN_GAME".equals(gameMessage.getAction()) && gameMessage.getGameId() != null) {
+                        player.setGameId(gameMessage.getGameId());
+                    } else {
+                        log.warn("Unexpected message while joining player to game, ignore");
+                        return;
+                    }
+                } catch (JsonSyntaxException ex) {
+                    log.warn("Invalid json found while joining player to game", ex);
+                }
+
+                MyGameBackend gameBackend = this.games.computeIfAbsent(player.getGameId(), id -> {
+                    log.info("Game {} not found, creating it", player.getGameId());
+                    MyGameBackend backend = gameBackendProvider.getNewGameBackend(GameManagerService.this);
+                    backend.onInit();
+                    ScheduledFuture<?> scheduledFuture = taskScheduler.scheduleAtFixedRate(backend::onPing, 100);
+                    this.backendToScheduledFuture.put(player.getGameId(), scheduledFuture);
+                    return backend;
+                });
+                log.info("Joining {} (with session id {}) to game {}", player.getName(), webSocketSession.getId(), player.getGameId());
+                gameBackend.onPlayerJoined(player);
+            }
+
+
+        }
+    }
+
+    public void passMessageToPlayer(String message, Player player) {
+        try {
+            log.debug("Passing message {} to {}", message, player.getName());
+            synchronized (this.playerToWebSocketSession.get(player)) {
+                this.playerToWebSocketSession.get(player).sendMessage(new TextMessage(message));
+            }
+        } catch (IOException ex) {
+            throw new WebSocketException(ex);
+        }
+    }
+
+    private void closeWebSocketSession(WebSocketSession session) {
+        try {
+            session.close();
+        } catch (IOException e) {
+            throw new WebSocketException(e);
+        }
+    }
+}
