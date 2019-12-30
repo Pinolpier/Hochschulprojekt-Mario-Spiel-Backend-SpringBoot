@@ -4,10 +4,8 @@ import lombok.Data;
 
 @Data
 public class GameMessage {
-    private String action;
-    private String authentication;
+    private String type, authentication, gameId;
     private Status status;
-    private String gameId;
 
     public enum Status {
         OK, FAILED

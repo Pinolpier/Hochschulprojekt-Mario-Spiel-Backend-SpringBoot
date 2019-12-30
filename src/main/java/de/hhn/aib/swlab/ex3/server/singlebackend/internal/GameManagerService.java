@@ -67,7 +67,7 @@ public class GameManagerService {
             this.playerToWebSocketSession.remove(player);
             this.webSocketSessionToPlayer.remove(webSocketSession);
 
-            long count = playerToWebSocketSession.keySet().stream().filter(p -> p.getGameId().equals(player.getGameId())).count();
+            long count = playerToWebSocketSession.keySet().stream().filter(p -> p.getGameId().equals(player.getGameId())).count(); //This line of code counts the amount of players in the same game
             if (count == 0) {
                 /* todo how to handle the problem, that the game will be recreated
                 * when A joins, leaves, B joins (and A will never rejoin the game)
@@ -91,7 +91,7 @@ public class GameManagerService {
             if (message != null && !message.trim().isEmpty()) {
                 try {
                     GameMessage gameMessage = gson.fromJson(message, GameMessage.class);
-                    if ("LOGIN".equals(gameMessage.getAction()) && gameMessage.getAuthentication() != null) {
+                    if ("LOGIN".equals(gameMessage.getType()) && gameMessage.getAuthentication() != null) {
                         Optional<Player> optionalPlayer = jwtToPlayerConverter.getPlayerFromToken(gameMessage.getAuthentication());
                         if (!optionalPlayer.isPresent()) {
                             // not a valid player
@@ -136,7 +136,7 @@ public class GameManagerService {
             } else {
                 try {
                     GameMessage gameMessage = gson.fromJson(message, GameMessage.class);
-                    if ("JOIN_GAME".equals(gameMessage.getAction()) && gameMessage.getGameId() != null) {
+                    if ("JOIN_GAME".equals(gameMessage.getType()) && gameMessage.getGameId() != null) {
                         player.setGameId(gameMessage.getGameId());
                     } else {
                         log.warn("Unexpected message while joining player to game, ignore");
