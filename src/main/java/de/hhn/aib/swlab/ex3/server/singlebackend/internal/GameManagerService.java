@@ -60,24 +60,25 @@ public class GameManagerService {
 
     public void passLeftMessageToGame(WebSocketSession webSocketSession) {
         Player player = this.webSocketSessionToPlayer.get(webSocketSession);
-        if (player != null && player.getGameId() != null && !player.getGameId().trim().equals("")) { //if player "exists and already joined a game - players could also just be logged in but not in a game (e.g. staying in the main menu)
-            log.info("Passing leave message from {} to game {} ", player.getName(), player.getGameId());
-            this.games.get(player.getGameId()).onPlayerLeft(player);
+        if (player != null) { //if player "exists and already joined a game - players could also just be logged in but not in a game (e.g. staying in the main menu)
+            if (player.getGameId() != null && !player.getGameId().trim().equals("")) {
+                log.info("Passing leave message from {} to game {} ", player.getName(), player.getGameId());
+                this.games.get(player.getGameId()).onPlayerLeft(player);
+                long count = playerToWebSocketSession.keySet().stream().filter(p -> p.getGameId().equals(player.getGameId())).count(); //This line of code counts the amount of players in the same game
+                if (count == 0) {
+                    /* todo how to handle the problem, that the game will be recreated
+                     * when A joins, leaves, B joins (and A will never rejoin the game)
+                     */
+
+                    // remove game
+                    log.info("There is no more player in game {} - it will be removed", player.getGameId());
+                    this.backendToScheduledFuture.get(player.getGameId()).cancel(false);
+                    this.backendToScheduledFuture.remove(player.getGameId());
+                    this.games.remove(player.getGameId());
+                }
+            }
             this.playerToWebSocketSession.remove(player);
             this.webSocketSessionToPlayer.remove(webSocketSession);
-
-            long count = playerToWebSocketSession.keySet().stream().filter(p -> p.getGameId().equals(player.getGameId())).count(); //This line of code counts the amount of players in the same game
-            if (count == 0) {
-                /* todo how to handle the problem, that the game will be recreated
-                 * when A joins, leaves, B joins (and A will never rejoin the game)
-                 */
-
-                // remove game
-                log.info("There is no more player in game {} - it will be removed", player.getGameId());
-                this.backendToScheduledFuture.get(player.getGameId()).cancel(false);
-                this.backendToScheduledFuture.remove(player.getGameId());
-                this.games.remove(player.getGameId());
-            }
         }
         // else: player not really joined the game (e.g. authorization failed)
         // ignore
