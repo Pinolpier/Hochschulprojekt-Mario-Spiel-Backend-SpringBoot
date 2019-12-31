@@ -60,8 +60,7 @@ public class GameManagerService {
 
     public void passLeftMessageToGame(WebSocketSession webSocketSession) {
         Player player = this.webSocketSessionToPlayer.get(webSocketSession);
-
-        if (player != null) {
+        if (player != null && player.getGameId() != null && !player.getGameId().trim().equals("")) { //if player "exists and already joined a game - players could also just be logged in but not in a game (e.g. staying in the main menu)
             log.info("Passing leave message from {} to game {} ", player.getName(), player.getGameId());
             this.games.get(player.getGameId()).onPlayerLeft(player);
             this.playerToWebSocketSession.remove(player);
@@ -70,8 +69,8 @@ public class GameManagerService {
             long count = playerToWebSocketSession.keySet().stream().filter(p -> p.getGameId().equals(player.getGameId())).count(); //This line of code counts the amount of players in the same game
             if (count == 0) {
                 /* todo how to handle the problem, that the game will be recreated
-                * when A joins, leaves, B joins (and A will never rejoin the game)
-                */
+                 * when A joins, leaves, B joins (and A will never rejoin the game)
+                 */
 
                 // remove game
                 log.info("There is no more player in game {} - it will be removed", player.getGameId());
@@ -98,11 +97,17 @@ public class GameManagerService {
                             log.info("Login {} failed, token invalid", webSocketSession.getId());
                             GameMessage response = new GameMessage();
                             response.setStatus(GameMessage.Status.FAILED);
+                            response.setType("LoginAnswer");
                             webSocketSession.sendMessage(new TextMessage(gson.toJson(response)));
                             closeWebSocketSession(webSocketSession);
                         } else {
                             // player is valid
                             Player player = optionalPlayer.get();
+                            log.info("Login {} succeeded, token valid, player's username is: {}", webSocketSession.getId(), player.getName());
+                            GameMessage response = new GameMessage();
+                            response.setStatus(GameMessage.Status.OK);
+                            response.setType("LoginAnswer");
+                            webSocketSession.sendMessage(new TextMessage(gson.toJson(response)));
                             // relation player to session
                             this.playerToWebSocketSession.put(player, webSocketSession);
                             this.webSocketSessionToPlayer.put(webSocketSession, player);
@@ -113,7 +118,6 @@ public class GameManagerService {
                 } catch (JsonSyntaxException | IOException ex) {
                     log.warn("Invalid json found while joining player to game", ex);
                 }
-
             } else {
                 log.info("Joining {} failed, token not present", webSocketSession.getId());
                 closeWebSocketSession(webSocketSession);
