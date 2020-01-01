@@ -15,6 +15,7 @@ import org.springframework.web.socket.WebSocketSession;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -34,6 +35,7 @@ public class GameManagerService {
     private Map<WebSocketSession, Player> webSocketSessionToPlayer;
     private Map<String, ScheduledFuture> backendToScheduledFuture;
     private List<WebSocketSession> sessionsNotAuthenticated;
+    private ArrayList<String> availableGames;
 
     private TaskScheduler taskScheduler;
     private Gson gson;
@@ -49,6 +51,7 @@ public class GameManagerService {
         this.jwtToPlayerConverter = jwtToPlayerConverter;
         this.taskScheduler = taskScheduler;
         gson = new Gson();
+        availableGames = new ArrayList<>();
     }
 
 
@@ -144,6 +147,12 @@ public class GameManagerService {
                     GameMessage gameMessage = gson.fromJson(message, GameMessage.class);
                     if ("JOIN_GAME".equals(gameMessage.getType()) && gameMessage.getGameId() != null) {
                         player.setGameId(gameMessage.getGameId());
+                    } else if ("GetGames".equals(gameMessage.getType())) {
+                        GameMessage gM = new GameMessage();
+                        gM.setType("GameList");
+                        gM.setStringList(availableGames);
+                        gM.setStatus(GameMessage.Status.OK);
+                        passMessageToPlayer(gson.toJson(gM), player);
                     } else {
                         log.warn("Unexpected message while joining player to game, ignore");
                         return;
@@ -161,10 +170,12 @@ public class GameManagerService {
                     return backend;
                 });
                 log.info("Joining {} (with session id {}) to game {}", player.getName(), webSocketSession.getId(), player.getGameId());
-                gameBackend.onPlayerJoined(player);
+                if (gameBackend.onPlayerJoined(player)) {
+                    availableGames.add(player.getGameId());
+                } else {
+                    availableGames.remove(player.getGameId());
+                }
             }
-
-
         }
     }
 

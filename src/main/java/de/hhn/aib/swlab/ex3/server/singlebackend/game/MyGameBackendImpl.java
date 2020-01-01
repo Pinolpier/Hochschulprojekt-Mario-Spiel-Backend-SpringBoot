@@ -23,7 +23,6 @@ public class MyGameBackendImpl extends AbstractGameBackend implements MyGameBack
     private Gson gson = new Gson();
     private long counter = 0;
 
-
     public MyGameBackendImpl(GameManagerService gameManagerService) {
         super(gameManagerService);
     }
@@ -33,13 +32,23 @@ public class MyGameBackendImpl extends AbstractGameBackend implements MyGameBack
     }
 
     @Override
-    public void onPlayerJoined(@NotNull Player player) {
+    public boolean onPlayerJoined(@NotNull Player player) {
+        GameMessage gameMessage = new GameMessage();
+        gameMessage.setType("JoinAnswer");
         if (player1 == null) {
             player1 = player;
+            gameMessage.setStatus(GameMessage.Status.OK);
+            sendMessageToPlayer(gson.toJson(gameMessage), player);
+            return true;
         } else if (player2 == null) {
             player2 = player;
+            gameMessage.setStatus(GameMessage.Status.OK);
+            sendMessageToPlayer(gson.toJson(gameMessage), player);
+            return false;
         } else {
-            sendMessageToPlayer("already 2 players in the game?!", player); // fixme
+            gameMessage.setStatus(GameMessage.Status.FAILED);
+            sendMessageToPlayer(gson.toJson(gameMessage), player);
+            return false;
         }
     }
 
