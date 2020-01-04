@@ -152,9 +152,6 @@ public class GameManagerService {
                     } else if ("GetGames".equals(gameMessage.getType())) {
                         GameMessage gM = new GameMessage();
                         gM.setType("GameList");
-                        if (availableGames.isEmpty()) {
-                            availableGames.add(player.getName() + "TEST!");
-                        }
                         gM.setStringList(availableGames);
                         gM.setStatus(GameMessage.Status.OK);
                         passMessageToPlayer(gson.toJson(gM), player);
