@@ -143,10 +143,12 @@ public class GameManagerService {
                 log.debug("Passing message {} from {} to game {}", message, player.getName(), player.getGameId());
                 this.games.get(player.getGameId()).onMessageFromPlayer(messageImpl);
             } else {
+                boolean isJoinRequest = false;
                 try {
                     GameMessage gameMessage = gson.fromJson(message, GameMessage.class);
                     if ("JOIN_GAME".equals(gameMessage.getType()) && gameMessage.getGameId() != null) {
                         player.setGameId(gameMessage.getGameId());
+                        isJoinRequest = true;
                     } else if ("GetGames".equals(gameMessage.getType())) {
                         GameMessage gM = new GameMessage();
                         gM.setType("GameList");
@@ -161,19 +163,21 @@ public class GameManagerService {
                     log.warn("Invalid json found while joining player to game", ex);
                 }
 
-                MyGameBackend gameBackend = this.games.computeIfAbsent(player.getGameId(), id -> {
-                    log.info("Game {} not found, creating it", player.getGameId());
-                    MyGameBackend backend = gameBackendProvider.getNewGameBackend(GameManagerService.this);
-                    backend.onInit();
-                    ScheduledFuture<?> scheduledFuture = taskScheduler.scheduleAtFixedRate(backend::onPing, 100);
-                    this.backendToScheduledFuture.put(player.getGameId(), scheduledFuture);
-                    return backend;
-                });
-                log.info("Joining {} (with session id {}) to game {}", player.getName(), webSocketSession.getId(), player.getGameId());
-                if (gameBackend.onPlayerJoined(player)) {
-                    availableGames.add(player.getGameId());
-                } else {
-                    availableGames.remove(player.getGameId());
+                if (isJoinRequest) {
+                    MyGameBackend gameBackend = this.games.computeIfAbsent(player.getGameId(), id -> {
+                        log.info("Game {} not found, creating it", player.getGameId());
+                        MyGameBackend backend = gameBackendProvider.getNewGameBackend(GameManagerService.this);
+                        backend.onInit();
+                        ScheduledFuture<?> scheduledFuture = taskScheduler.scheduleAtFixedRate(backend::onPing, 100);
+                        this.backendToScheduledFuture.put(player.getGameId(), scheduledFuture);
+                        return backend;
+                    });
+                    log.info("Joining {} (with session id {}) to game {}", player.getName(), webSocketSession.getId(), player.getGameId());
+                    if (gameBackend.onPlayerJoined(player)) {
+                        availableGames.add(player.getGameId());
+                    } else {
+                        availableGames.remove(player.getGameId());
+                    }
                 }
             }
         }
