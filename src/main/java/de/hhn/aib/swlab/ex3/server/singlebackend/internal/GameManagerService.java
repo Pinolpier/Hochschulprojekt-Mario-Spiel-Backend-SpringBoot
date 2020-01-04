@@ -192,6 +192,10 @@ public class GameManagerService {
         if (player != null) {
             log.info("player is not null, player.getName is: " + player.getName());
         }
+        log.debug("Is playerToWebSocketSession null? " + (playerToWebSocketSession == null));
+        if (webSocketSessionToPlayer != null) {
+            log.debug("playerToWebSocketSession.get(player) is null? " + (playerToWebSocketSession.get(player) == null));
+        }
         try {
             log.debug("Passing message {} to {}", message, player.getName());
             synchronized (this.playerToWebSocketSession.get(player)) {
