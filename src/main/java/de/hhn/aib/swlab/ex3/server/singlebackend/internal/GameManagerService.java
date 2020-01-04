@@ -116,6 +116,13 @@ public class GameManagerService {
                             // relation player to session
                             this.playerToWebSocketSession.put(player, webSocketSession);
                             this.webSocketSessionToPlayer.put(webSocketSession, player);
+                            log.info("Zuordnung sollte erfolgt sein. Ist playerToWebSocketSession == null? " + (playerToWebSocketSession == null) + " und webSocketSessionToPlayer == null? " + (webSocketSessionToPlayer == null));
+                            if (webSocketSessionToPlayer != null) {
+                                log.info("Ist webSocketSessionToPlayer.get(player) == null? " + (webSocketSessionToPlayer.get(player) == null));
+                            }
+                            if (playerToWebSocketSession != null) {
+                                log.info("Ist playerToWebSocketSession.get(webSocketSession) == null? " + (playerToWebSocketSession.get(webSocketSession) == null));
+                            }
                         }
                     } else {
                         log.warn("Unexpected message while logging in, ignore");
@@ -192,9 +199,9 @@ public class GameManagerService {
         if (player != null) {
             log.info("player is not null, player.getName is: " + player.getName());
         }
-        log.info("Is playerToWebSocketSession null? " + (playerToWebSocketSession == null));
-        if (webSocketSessionToPlayer != null) {
-            log.info("playerToWebSocketSession.get(player) is null? " + (playerToWebSocketSession.get(player) == null));
+        log.info("Is playerToWebSocketSession null? " + (this.playerToWebSocketSession == null));
+        if (this.webSocketSessionToPlayer != null) {
+            log.info("playerToWebSocketSession.get(player) is null? " + (this.playerToWebSocketSession.get(player) == null));
         }
         if (playerToWebSocketSession.get(player) != null) {
             try {
