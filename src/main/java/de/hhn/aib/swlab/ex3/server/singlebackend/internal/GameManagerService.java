@@ -192,13 +192,13 @@ public class GameManagerService {
         if (player != null) {
             log.info("player is not null, player.getName is: " + player.getName());
         }
-        log.debug("Is playerToWebSocketSession null? " + (playerToWebSocketSession == null));
+        log.info("Is playerToWebSocketSession null? " + (playerToWebSocketSession == null));
         if (webSocketSessionToPlayer != null) {
-            log.debug("playerToWebSocketSession.get(player) is null? " + (playerToWebSocketSession.get(player) == null));
+            log.info("playerToWebSocketSession.get(player) is null? " + (playerToWebSocketSession.get(player) == null));
         }
         if (playerToWebSocketSession.get(player) != null) {
             try {
-                log.debug("Passing message {} to {}", message, player.getName());
+                log.info("Passing message {} to {}", message, player.getName());
                 synchronized (this.playerToWebSocketSession.get(player)) {
                     this.playerToWebSocketSession.get(player).sendMessage(new TextMessage(message));
                 }
