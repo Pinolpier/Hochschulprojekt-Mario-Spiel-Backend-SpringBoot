@@ -116,12 +116,12 @@ public class GameManagerService {
                             // relation player to session
                             this.playerToWebSocketSession.put(player, webSocketSession);
                             this.webSocketSessionToPlayer.put(webSocketSession, player);
-                            log.info("Zuordnung sollte erfolgt sein. Ist playerToWebSocketSession == null? " + (playerToWebSocketSession == null) + " und webSocketSessionToPlayer == null? " + (webSocketSessionToPlayer == null));
-                            if (webSocketSessionToPlayer != null) {
-                                log.info("Ist webSocketSessionToPlayer.get(player) == null? " + (webSocketSessionToPlayer.get(player) == null));
+                            log.info("Zuordnung sollte erfolgt sein. Ist playerToWebSocketSession == null? " + (this.playerToWebSocketSession == null) + " und webSocketSessionToPlayer == null? " + (this.webSocketSessionToPlayer == null));
+                            if (this.webSocketSessionToPlayer != null) {
+                                log.info("Ist webSocketSessionToPlayer.get(player) == null? " + (this.webSocketSessionToPlayer.get(player) == null));
                             }
-                            if (playerToWebSocketSession != null) {
-                                log.info("Ist playerToWebSocketSession.get(webSocketSession) == null? " + (playerToWebSocketSession.get(webSocketSession) == null));
+                            if (this.playerToWebSocketSession != null) {
+                                log.info("Ist playerToWebSocketSession.get(webSocketSession) == null? " + (this.playerToWebSocketSession.get(webSocketSession) == null));
                             }
                         }
                     } else {
