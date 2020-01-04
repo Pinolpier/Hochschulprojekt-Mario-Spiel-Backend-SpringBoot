@@ -173,6 +173,7 @@ public class GameManagerService {
                         return backend;
                     });
                     log.info("Joining {} (with session id {}) to game {}", player.getName(), webSocketSession.getId(), player.getGameId());
+                    log.warn("Is backend null? " + (gameBackend == null));
                     if (gameBackend.onPlayerJoined(player)) {
                         availableGames.add(player.getGameId());
                     } else {

@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import de.hhn.aib.swlab.ex3.server.singlebackend.external.model.Message;
 import de.hhn.aib.swlab.ex3.server.singlebackend.external.model.Player;
 import de.hhn.aib.swlab.ex3.server.singlebackend.internal.GameManagerService;
+import jdk.internal.jline.internal.Log;
 import lombok.Data;
 import lombok.extern.log4j.Log4j2;
 
@@ -38,16 +39,22 @@ public class MyGameBackendImpl extends AbstractGameBackend implements MyGameBack
         if (player1 == null) {
             player1 = player;
             gameMessage.setStatus(GameMessage.Status.OK);
-            sendMessageToPlayer(gson.toJson(gameMessage), player);
+            String message = gson.toJson(gameMessage);
+            Log.info("Sending the following message {} to player {} and internally returning true", message, player.getName());
+            sendMessageToPlayer(message, player);
             return true;
         } else if (player2 == null) {
             player2 = player;
             gameMessage.setStatus(GameMessage.Status.OK);
-            sendMessageToPlayer(gson.toJson(gameMessage), player);
+            String message = gson.toJson(gameMessage);
+            Log.info("Sending the following message {} to player {} and internally returning false", message, player.getName());
+            sendMessageToPlayer(message, player);
             return false;
         } else {
             gameMessage.setStatus(GameMessage.Status.FAILED);
-            sendMessageToPlayer(gson.toJson(gameMessage), player);
+            String message = gson.toJson(gameMessage);
+            Log.info("Sending the following message {} to player {} and internally returning false", message, player.getName());
+            sendMessageToPlayer(message, player);
             return false;
         }
     }
