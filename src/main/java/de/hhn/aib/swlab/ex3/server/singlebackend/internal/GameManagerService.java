@@ -2,6 +2,7 @@ package de.hhn.aib.swlab.ex3.server.singlebackend.internal;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
+import com.sun.tools.sjavac.Log;
 import de.hhn.aib.swlab.ex3.server.singlebackend.external.model.Player;
 import de.hhn.aib.swlab.ex3.server.singlebackend.external.model.impl.MessageImpl;
 import de.hhn.aib.swlab.ex3.server.singlebackend.game.GameMessage;
@@ -184,6 +185,13 @@ public class GameManagerService {
     }
 
     public void passMessageToPlayer(String message, Player player) {
+        Log.info("passMessageToPlayer has been called. Message is null? " + (message == null) + " Player is null? " + (player == null));
+        if (message != null) {
+            Log.info("message is not null, message is: " + message);
+        }
+        if (player != null) {
+            Log.info("player is not null, player.getName is: " + player.getName());
+        }
         try {
             log.debug("Passing message {} to {}", message, player.getName());
             synchronized (this.playerToWebSocketSession.get(player)) {
