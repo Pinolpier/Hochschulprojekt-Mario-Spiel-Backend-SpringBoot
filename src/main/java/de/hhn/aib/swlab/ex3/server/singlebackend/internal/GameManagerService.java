@@ -123,6 +123,7 @@ public class GameManagerService {
                             if (this.playerToWebSocketSession != null) {
                                 log.info("Ist playerToWebSocketSession.get(webSocketSession) == null? " + (this.playerToWebSocketSession.get(webSocketSession) == null));
                             }
+                            log.info(webSocketSessionToPlayer.toString());
                         }
                     } else {
                         log.warn("Unexpected message while logging in, ignore");
