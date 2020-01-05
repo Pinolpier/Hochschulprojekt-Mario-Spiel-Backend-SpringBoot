@@ -86,7 +86,6 @@ public class GameManagerService {
         }
         // else: player not really joined the game (e.g. authorization failed)
         // ignore
-
     }
 
     public void passMessageToGame(String message, WebSocketSession webSocketSession) {
@@ -222,5 +221,13 @@ public class GameManagerService {
         } catch (IOException e) {
             throw new WebSocketException(e);
         }
+    }
+
+    public void quitGame(String gameID) {
+        this.backendToScheduledFuture.get(gameID).cancel(false);
+        this.backendToScheduledFuture.remove(gameID);
+        this.games.remove(gameID);
+        availableGames.remove(gameID);
+
     }
 }

@@ -24,8 +24,8 @@ public abstract class AbstractGameBackend implements MyGameBackend {
     }
 
     @Override
-    public void quitGame() {
-
+    public void quitGame(String gameID) {
+        gameManagerService.quitGame(gameID);
     }
 
     @Override

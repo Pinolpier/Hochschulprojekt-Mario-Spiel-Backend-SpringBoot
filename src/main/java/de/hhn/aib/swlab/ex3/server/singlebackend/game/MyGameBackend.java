@@ -42,8 +42,10 @@ public interface MyGameBackend {
 
     // TODO add documentation
     void sendMessageToPlayer(@NotNull String message, Player player);
+
     // TODO add documentation
-    void quitGame();
+    void quitGame(String gameID);
+
     // TODO add documentation
     void publishScore(Player player, int score);
 }
