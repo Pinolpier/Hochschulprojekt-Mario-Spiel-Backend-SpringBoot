@@ -11,6 +11,7 @@ public class PlayerImpl implements Player {
     private int playerIndex;
     private String token;
     private String gameId;
+    private Integer score;
 
     @Override
     public boolean equals(Object o) {

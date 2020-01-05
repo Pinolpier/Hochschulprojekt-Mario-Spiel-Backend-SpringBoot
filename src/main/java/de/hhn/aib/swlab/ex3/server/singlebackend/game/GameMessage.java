@@ -6,7 +6,8 @@ import java.util.ArrayList;
 
 @Data
 public class GameMessage {
-    private String type, authentication, gameId;
+    private String type, authentication, gameId, payloadString;
+    private Integer payloadInteger;
     private Status status;
     private ArrayList<String> stringList;
 
