@@ -54,7 +54,7 @@ public class MyGameBackendImpl extends AbstractGameBackend implements MyGameBack
                 @Override
                 public void run() {
                     try {
-                        Thread.sleep(1000);
+                        Thread.sleep(5000);
                         GameMessage countdownMessage = new GameMessage();
                         countdownMessage.setType("Countdown");
                         for (int i = 3; i >= 0; i--) {
