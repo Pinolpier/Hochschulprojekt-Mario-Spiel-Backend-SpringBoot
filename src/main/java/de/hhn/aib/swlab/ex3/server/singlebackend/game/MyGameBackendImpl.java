@@ -93,7 +93,8 @@ public class MyGameBackendImpl extends AbstractGameBackend implements MyGameBack
                 if (gameMessage.getType().equals("Movement")) {
                     Player player = (message.getPlayer() == player1) ? player2 : player1;
                     if (player != null) {
-                        sendMessageToPlayer(message.getContent(), player);
+                        gameMessage.setAuthentication(null);
+                        sendMessageToPlayer(gson.toJson(gameMessage), player);
                     }
                 } else if (gameMessage.getType().equals("endGame")) {
                     message.getPlayer().setScore(gameMessage.getPayloadInteger());
