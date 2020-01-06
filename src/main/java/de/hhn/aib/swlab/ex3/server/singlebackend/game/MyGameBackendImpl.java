@@ -153,7 +153,7 @@ public class MyGameBackendImpl extends AbstractGameBackend implements MyGameBack
             assignments[xCentre-1][yCentre] = color;
             assignments[xCentre][yCentre-1] = color;
             assignments[xCentre+1][yCentre] = color;
-            assignments[xCentre][yCentre+1] = color;
+            assignments[xCentre][yCentre + 1] = color;
 
         }
 
@@ -163,12 +163,12 @@ public class MyGameBackendImpl extends AbstractGameBackend implements MyGameBack
 
         String s = gson.toJson(container);
 
-        if (player1 != null) {
-            sendMessageToPlayer(s, player1);
-        }
-        if (player2 != null) {
-            sendMessageToPlayer(s, player2);
-        }
+//        if (player1 != null) {
+//            sendMessageToPlayer(s, player1);
+//        }
+//        if (player2 != null) {
+//            sendMessageToPlayer(s, player2);
+//        }
     }
 
     @Data
