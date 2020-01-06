@@ -193,5 +193,14 @@ public class MyGameBackendImpl extends AbstractGameBackend implements MyGameBack
         static final int GRID_SIZE = 50;
     }
 
+    @Override
+    public int playerCount() {
+        int count = 0;
+        if (player1 != null)
+            count++;
+        if (player2 != null)
+            count++;
+        return count;
+    }
 
 }

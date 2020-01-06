@@ -66,18 +66,27 @@ public class GameManagerService {
         if (player != null) { //if player "exists and already joined a game - players could also just be logged in but not in a game (e.g. staying in the main menu)
             if (player.getGameId() != null && !player.getGameId().trim().equals("")) {
                 log.info("Passing leave message from {} to game {} ", player.getName(), player.getGameId());
-                this.games.get(player.getGameId()).onPlayerLeft(player);
-                long count = playerToWebSocketSession.keySet().stream().filter(p -> p.getGameId().equals(player.getGameId())).count(); //This line of code counts the amount of players in the same game
-                if (count == 0) {
+                String gameID = player.getGameId();
+                this.games.get(gameID).onPlayerLeft(player);
+                //Following line is a horrible way to count players within a special game
+                //long count = playerToWebSocketSession.keySet().stream().filter(p -> p.getGameId().equals(gameID)).count(); //This line of code counts the amount of players in the same game
+                //this one is better
+                int count = this.games.get(gameID).playerCount();
+                if (count == -1) {
+                    //overriding in MyGameBackendImpl didn't work as expected. Use Simon's code
+                    count = ((int) playerToWebSocketSession.keySet().stream().filter(p -> p.getGameId().equals(gameID)).count()) - 1; //This line of code counts the amount of players in the same game
+                }
+                if (count <= 0) {
                     /* todo how to handle the problem, that the game will be recreated
                      * when A joins, leaves, B joins (and A will never rejoin the game)
                      */
 
                     // remove game
+                    availableGames.remove(gameID);
                     log.info("There is no more player in game {} - it will be removed", player.getGameId());
-                    this.backendToScheduledFuture.get(player.getGameId()).cancel(false);
-                    this.backendToScheduledFuture.remove(player.getGameId());
-                    this.games.remove(player.getGameId());
+                    this.backendToScheduledFuture.get(gameID).cancel(false);
+                    this.backendToScheduledFuture.remove(gameID);
+                    this.games.remove(gameID);
                 }
             }
             this.playerToWebSocketSession.remove(player);
@@ -182,6 +191,9 @@ public class GameManagerService {
                     log.info("Joining {} (with session id {}) to game {}", player.getName(), webSocketSession.getId(), player.getGameId());
                     log.warn("Is backend null? " + (gameBackend == null));
                     if (gameBackend.onPlayerJoined(player)) {
+                        if (availableGames.contains(player.getGameId())) {
+                            log.error("This should not happen! True returned by onPlayerJoined but gameID is already listed in availableGames");
+                        }
                         availableGames.add(player.getGameId());
                     } else {
                         availableGames.remove(player.getGameId());

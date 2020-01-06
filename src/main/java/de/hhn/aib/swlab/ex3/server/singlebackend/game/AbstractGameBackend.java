@@ -32,4 +32,9 @@ public abstract class AbstractGameBackend implements MyGameBackend {
     public void publishScore(Player player, int score) {
 
     }
+
+    @Override
+    public int playerCount() {
+        return -1;
+    }
 }
