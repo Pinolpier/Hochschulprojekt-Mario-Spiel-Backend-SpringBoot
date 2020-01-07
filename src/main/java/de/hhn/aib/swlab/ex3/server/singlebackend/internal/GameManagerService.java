@@ -98,6 +98,7 @@ public class GameManagerService {
     }
 
     public void passMessageToGame(String message, WebSocketSession webSocketSession) {
+        log.info("received the following message from {}: {}", webSocketSession, message);
         if (sessionsNotAuthenticated.contains(webSocketSession)) {
             sessionsNotAuthenticated.remove(webSocketSession);
             if (message != null && !message.trim().isEmpty()) {
