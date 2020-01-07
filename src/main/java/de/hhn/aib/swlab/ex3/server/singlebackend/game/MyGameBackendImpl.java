@@ -129,9 +129,10 @@ public class MyGameBackendImpl extends AbstractGameBackend implements MyGameBack
                         sendMessageToPlayer(gson.toJson(winnerEvaluation), player1);
                     }
                     //TODO kill game instance on server!
+                    String gameID = player1.getGameId();
                     player1.setGameId(null);
                     player2.setGameId(null);
-                    quitGame(player1.getGameId());
+                    quitGame(gameID);
                 }
             }
         } catch (JsonSyntaxException ex) {
