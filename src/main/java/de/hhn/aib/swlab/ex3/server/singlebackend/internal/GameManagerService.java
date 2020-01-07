@@ -134,7 +134,7 @@ public class GameManagerService {
                             log.info(webSocketSessionToPlayer.toString());
                         }
                     } else {
-                        log.warn("Unexpected message while logging in, ignore");
+                        log.warn("Unexpected message while logging in, ignore. Message is {}");
                     }
                 } catch (JsonSyntaxException | IOException ex) {
                     log.warn("Invalid json found while joining player to game", ex);
@@ -172,7 +172,7 @@ public class GameManagerService {
                         gM.setStatus(GameMessage.Status.OK);
                         passMessageToPlayer(gson.toJson(gM), player);
                     } else {
-                        log.warn("Unexpected message while joining player to game, ignore");
+                        log.warn("Unexpected message while joining player to game, ignore. Message is {}", message);
                         return;
                     }
                 } catch (JsonSyntaxException ex) {
