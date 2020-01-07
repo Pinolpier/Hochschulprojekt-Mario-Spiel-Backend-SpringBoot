@@ -204,16 +204,20 @@ public class GameManagerService {
     }
 
     public void passMessageToPlayer(String message, Player player) {
-        log.info("passMessageToPlayer has been called. Message is null? " + (message == null) + " Player is null? " + (player == null));
+        //log.info("passMessageToPlayer has been called. Message is null? " + (message == null) + " Player is null? " + (player == null));
         if (message != null) {
-            log.info("message is not null, message is: " + message);
+            //log.info("message is not null, message is: " + message);
+        } else {
+            log.error("passMessageToPlayer has been called with null message");
         }
         if (player != null) {
-            log.info("player is not null, player.getName is: " + player.getName());
+            //log.info("player is not null, player.getName is: " + player.getName());
+        } else {
+            log.error("passMessageToPlayer has been called with null player");
         }
-        log.info("Is playerToWebSocketSession null? " + (this.playerToWebSocketSession == null));
+        //log.info("Is playerToWebSocketSession null? " + (this.playerToWebSocketSession == null));
         if (this.webSocketSessionToPlayer != null) {
-            log.info("playerToWebSocketSession.get(player) is null? " + (this.playerToWebSocketSession.get(player) == null));
+            //log.info("playerToWebSocketSession.get(player) is null? " + (this.playerToWebSocketSession.get(player) == null));
         }
         if (playerToWebSocketSession.get(player) != null) {
             try {
