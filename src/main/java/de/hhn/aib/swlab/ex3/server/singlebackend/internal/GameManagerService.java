@@ -165,10 +165,14 @@ public class GameManagerService {
                 this.games.get(player.getGameId()).onMessageFromPlayer(messageImpl);
             } else {
                 boolean isJoinRequest = false;
+                int level = 0;
                 try {
                     GameMessage gameMessage = gson.fromJson(message, GameMessage.class);
                     if ("JOIN_GAME".equals(gameMessage.getType()) && gameMessage.getGameId() != null) {
                         player.setGameId(gameMessage.getGameId());
+                        if (gameMessage.getPayloadInteger() != null) {
+                            level = gameMessage.getPayloadInteger();
+                        }
                         isJoinRequest = true;
                     } else if ("GetGames".equals(gameMessage.getType())) {
                         GameMessage gM = new GameMessage();
@@ -193,6 +197,9 @@ public class GameManagerService {
                         this.backendToScheduledFuture.put(player.getGameId(), scheduledFuture);
                         return backend;
                     });
+                    if (level != 0) {
+                        gameBackend.setLevel(level);
+                    }
                     log.info("Joining {} (with session id {}) to game {}", player.getName(), webSocketSession.getId(), player.getGameId());
                     log.warn("Is backend null? " + (gameBackend == null));
                     if (gameBackend.onPlayerJoined(player)) {

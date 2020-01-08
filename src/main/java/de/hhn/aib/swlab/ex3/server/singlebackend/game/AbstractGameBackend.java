@@ -10,6 +10,7 @@ import javax.validation.constraints.NotNull;
 public abstract class AbstractGameBackend implements MyGameBackend {
 
     private GameManagerService gameManagerService;
+    private int level;
 
     public AbstractGameBackend(GameManagerService gameManagerService) {
         this.gameManagerService = gameManagerService;
@@ -36,5 +37,13 @@ public abstract class AbstractGameBackend implements MyGameBackend {
     @Override
     public int playerCount() {
         return -1;
+    }
+
+    public int getLevel() {
+        return level;
+    }
+
+    public void setLevel(int level) {
+        this.level = level;
     }
 }

@@ -37,6 +37,7 @@ public class MyGameBackendImpl extends AbstractGameBackend implements MyGameBack
     public boolean onPlayerJoined(@NotNull Player player) {
         GameMessage gameMessage = new GameMessage();
         gameMessage.setType("JoinAnswer");
+        gameMessage.setPayloadInteger(getLevel());
         if (player1 == null) {
             player1 = player;
             gameMessage.setStatus(GameMessage.Status.OK);

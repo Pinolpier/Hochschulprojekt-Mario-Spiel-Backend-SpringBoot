@@ -50,4 +50,8 @@ public interface MyGameBackend {
     void publishScore(Player player, int score);
 
     int playerCount();
+
+    int getLevel();
+
+    void setLevel(int level);
 }
