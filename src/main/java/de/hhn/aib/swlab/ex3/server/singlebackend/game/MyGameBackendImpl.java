@@ -80,8 +80,17 @@ public class MyGameBackendImpl extends AbstractGameBackend implements MyGameBack
 
     @Override
     public void onPlayerLeft(@NotNull Player player) {
-        if (player == player1) player1 = null;
-        if (player == player2) player2 = null;
+        String gameID = player.getGameId();
+        Player winner = (player == player1) ? player2 : player1;
+        player1.setGameId(null);
+        player2.setGameId(null);
+        if (winner != null) { //send Win message To othe player if he / she already joined.
+            GameMessage winBecauseLeaveMessage = new GameMessage();
+            winBecauseLeaveMessage.setType("WinBecauseLeave");
+            winBecauseLeaveMessage.setStatus(GameMessage.Status.OK);
+            sendMessageToPlayer(gson.toJson(winBecauseLeaveMessage, GameMessage.class), winner);
+        }
+        quitGame(gameID);
     }
 
     @Override
@@ -128,7 +137,7 @@ public class MyGameBackendImpl extends AbstractGameBackend implements MyGameBack
                         winnerEvaluation.setPayloadInteger(1);
                         sendMessageToPlayer(gson.toJson(winnerEvaluation), player1);
                     }
-                    //TODO kill game instance on server!
+                    //kill game instance on server!
                     String gameID = player1.getGameId();
                     player1.setGameId(null);
                     player2.setGameId(null);

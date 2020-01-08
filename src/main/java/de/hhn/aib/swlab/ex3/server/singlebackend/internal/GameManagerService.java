@@ -71,26 +71,30 @@ public class GameManagerService {
                 //Following line is a horrible way to count players within a special game
                 //long count = playerToWebSocketSession.keySet().stream().filter(p -> p.getGameId().equals(gameID)).count(); //This line of code counts the amount of players in the same game
                 //this one is better
-                int count = this.games.get(gameID).playerCount();
-                if (count == -1) {
-                    //overriding in MyGameBackendImpl didn't work as expected. Use Simon's code
-                    count = ((int) playerToWebSocketSession.keySet().stream().filter(p -> p.getGameId().equals(gameID)).count()) - 1; //This line of code counts the amount of players in the same game
-                }
-                if (count <= 0) {
-                    /* todo how to handle the problem, that the game will be recreated
-                     * when A joins, leaves, B joins (and A will never rejoin the game)
-                     */
 
-                    // remove game
-                    availableGames.remove(gameID);
-                    log.info("There is no more player in game {} - it will be removed", player.getGameId());
-                    this.backendToScheduledFuture.get(gameID).cancel(false);
-                    this.backendToScheduledFuture.remove(gameID);
-                    this.games.remove(gameID);
-                }
+
+                //This code is not used anymore. Because it's a 1v1 it doesn't make sense to keep the game alive.
+//                int count = this.games.get(gameID).playerCount();
+//                if (count == -1) {
+//                    //overriding in MyGameBackendImpl didn't work as expected. Use Simon's code
+//                    count = ((int) playerToWebSocketSession.keySet().stream().filter(p -> p.getGameId().equals(gameID)).count()) - 1; //This line of code counts the amount of players in the same game
+//                }
+//                if (count <= 0) {
+//                    /* todo how to handle the problem, that the game will be recreated
+//                     * when A joins, leaves, B joins (and A will never rejoin the game)
+//                     */
+//
+//                    // remove game
+//                    availableGames.remove(gameID);
+//                    log.info("There is no more player in game {} - it will be removed", player.getGameId());
+//                    this.backendToScheduledFuture.get(gameID).cancel(false);
+//                    this.backendToScheduledFuture.remove(gameID);
+//                    this.games.remove(gameID);
+//                }
             }
             this.playerToWebSocketSession.remove(player);
             this.webSocketSessionToPlayer.remove(webSocketSession);
+            player = null;
             log.info("Logged out player with username: {}", player.getName());
         }
         // else: player not really joined the game (e.g. authorization failed)
