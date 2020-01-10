@@ -14,4 +14,12 @@ public interface Player {
     Integer getScore();
 
     void setScore(Integer score);
+
+    void setPosition(float x, float y, long timeSet);
+
+    float getPositionX();
+
+    float getPositionY();
+
+    long getPostionTime();
 }

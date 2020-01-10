@@ -102,10 +102,37 @@ public class MyGameBackendImpl extends AbstractGameBackend implements MyGameBack
             GameMessage gameMessage = gson.fromJson(message.getContent(), GameMessage.class);
             if (gameMessage.getType() != null) {
                 if (gameMessage.getType() == GameMessage.Type.MOVE) {
-                    Player player = (message.getPlayer() == player1) ? player2 : player1;
-                    if (player != null) {
-                        gameMessage.setAuthentication(null);
-                        sendMessageToPlayer(gson.toJson(gameMessage), player);
+                    if (gameMessage.getStringList() != null) {
+                        float x = Float.parseFloat(gameMessage.getStringList().get(0));
+                        float y = Float.parseFloat(gameMessage.getStringList().get(1));
+                        float oldX = message.getPlayer().getPositionX();
+                        float oldY = message.getPlayer().getPositionY();
+                        long oldTime = message.getPlayer().getPostionTime();
+                        long newTime = System.currentTimeMillis();
+                        int timeDifference = (int) (newTime - oldTime);
+                        double distance = Math.sqrt(Math.pow((x - oldX), 2) + Math.pow((y - oldY), 2));
+                        //theoretical maximum distance is maximum speed / 1000 * timeDifferenceInMilliseconds:
+                        //for safety a buffering factor of 20 will be used
+                        if (distance > (0.002 * timeDifference) * 20) {
+                            //cheat has been detected - way too fast movement
+                            GameMessage cheatMessage = new GameMessage();
+                            cheatMessage.setType(GameMessage.Type.LOOSE_CHEAT);
+                            sendMessageToPlayer(gson.toJson(cheatMessage), message.getPlayer());
+                            cheatMessage.setType(GameMessage.Type.WIN_CHEAT);
+                            sendMessageToPlayer(gson.toJson(cheatMessage), (message.getPlayer() == player1) ? player2 : player1);
+                            //kill game instance on server!
+                            String gameID = player1.getGameId();
+                            player1.setGameId(null);
+                            player2.setGameId(null);
+                            quitGame(gameID);
+                        } else {
+                            message.getPlayer().setPosition(x, y, System.currentTimeMillis());
+                            Player player = (message.getPlayer() == player1) ? player2 : player1;
+                            if (player != null) {
+                                gameMessage.setAuthentication(null);
+                                sendMessageToPlayer(gson.toJson(gameMessage), player);
+                            }
+                        }
                     }
                 } else if (gameMessage.getType() == GameMessage.Type.END_GAME) {
                     message.getPlayer().setScore(gameMessage.getPayloadInteger());

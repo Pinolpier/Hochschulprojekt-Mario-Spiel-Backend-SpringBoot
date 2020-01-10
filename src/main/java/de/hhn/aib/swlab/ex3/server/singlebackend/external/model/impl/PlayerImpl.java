@@ -12,6 +12,8 @@ public class PlayerImpl implements Player {
     private String token;
     private String gameId;
     private Integer score;
+    private float x, y;
+    private long timeSet;
 
     @Override
     public boolean equals(Object o) {
@@ -25,5 +27,27 @@ public class PlayerImpl implements Player {
     @Override
     public int hashCode() {
         return Objects.hash(name);
+    }
+
+    @Override
+    public void setPosition(float x, float y, long timeSet) {
+        this.x = x;
+        this.y = y;
+        this.timeSet = timeSet;
+    }
+
+    @Override
+    public float getPositionX() {
+        return x;
+    }
+
+    @Override
+    public float getPositionY() {
+        return y;
+    }
+
+    @Override
+    public long getPostionTime() {
+        return timeSet;
     }
 }
