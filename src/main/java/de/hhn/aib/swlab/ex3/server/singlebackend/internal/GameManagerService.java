@@ -108,14 +108,14 @@ public class GameManagerService {
             if (message != null && !message.trim().isEmpty()) {
                 try {
                     GameMessage gameMessage = gson.fromJson(message, GameMessage.class);
-                    if ("LOGIN".equals(gameMessage.getType()) && gameMessage.getAuthentication() != null) {
+                    if (gameMessage.getType() == GameMessage.Type.LOGIN && gameMessage.getAuthentication() != null) {
                         Optional<Player> optionalPlayer = jwtToPlayerConverter.getPlayerFromToken(gameMessage.getAuthentication());
                         if (!optionalPlayer.isPresent()) {
                             // not a valid player
                             log.info("Login {} failed, token invalid", webSocketSession.getId());
                             GameMessage response = new GameMessage();
                             response.setStatus(GameMessage.Status.FAILED);
-                            response.setType("LoginAnswer");
+                            response.setType(GameMessage.Type.LOGIN_ANSWER);
                             webSocketSession.sendMessage(new TextMessage(gson.toJson(response)));
                             closeWebSocketSession(webSocketSession);
                         } else {
@@ -124,7 +124,7 @@ public class GameManagerService {
                             log.info("Login {} succeeded, token valid, player's username is: {}", webSocketSession.getId(), player.getName());
                             GameMessage response = new GameMessage();
                             response.setStatus(GameMessage.Status.OK);
-                            response.setType("LoginAnswer");
+                            response.setType(GameMessage.Type.LOGIN_ANSWER);
                             webSocketSession.sendMessage(new TextMessage(gson.toJson(response)));
                             // relation player to session
                             this.playerToWebSocketSession.put(player, webSocketSession);
@@ -168,15 +168,15 @@ public class GameManagerService {
                 int level = 0;
                 try {
                     GameMessage gameMessage = gson.fromJson(message, GameMessage.class);
-                    if ("JOIN_GAME".equals(gameMessage.getType()) && gameMessage.getGameId() != null) {
+                    if (gameMessage.getType() == GameMessage.Type.JOIN_GAME && gameMessage.getGameId() != null) {
                         player.setGameId(gameMessage.getGameId());
                         if (gameMessage.getPayloadInteger() != null) {
                             level = gameMessage.getPayloadInteger();
                         }
                         isJoinRequest = true;
-                    } else if ("GetGames".equals(gameMessage.getType())) {
+                    } else if (gameMessage.getType() == GameMessage.Type.GET_GAMES) {
                         GameMessage gM = new GameMessage();
-                        gM.setType("GameList");
+                        gM.setType(GameMessage.Type.GAME_LIST);
                         gM.setStringList(availableGames);
                         gM.setStatus(GameMessage.Status.OK);
                         passMessageToPlayer(gson.toJson(gM), player);

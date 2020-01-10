@@ -6,12 +6,17 @@ import java.util.ArrayList;
 
 @Data
 public class GameMessage {
-    private String type, authentication, gameId, payloadString;
+    private String authentication, gameId, payloadString;
     private Integer payloadInteger;
     private Status status;
+    private Type type;
     private ArrayList<String> stringList;
 
     public enum Status {
         OK, FAILED
+    }
+
+    public enum Type {
+        GET_GAMES, JOIN_GAME, JOIN_ANSWER, LOGIN, MOVE, SCORE_REPORT, END_GAME, GAME_LIST, LOGIN_ANSWER, COUNTDOWN, WIN_BECAUSE_LEAVE, SCORE_REQUEST, WINNER_EVALUATION
     }
 }

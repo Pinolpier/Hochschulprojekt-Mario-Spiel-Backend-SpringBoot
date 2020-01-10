@@ -36,7 +36,7 @@ public class MyGameBackendImpl extends AbstractGameBackend implements MyGameBack
     @Override
     public boolean onPlayerJoined(@NotNull Player player) {
         GameMessage gameMessage = new GameMessage();
-        gameMessage.setType("JoinAnswer");
+        gameMessage.setType(GameMessage.Type.JOIN_ANSWER);
         gameMessage.setPayloadInteger(getLevel());
         if (player1 == null) {
             player1 = player;
@@ -57,7 +57,7 @@ public class MyGameBackendImpl extends AbstractGameBackend implements MyGameBack
                     try {
                         Thread.sleep(5000);
                         GameMessage countdownMessage = new GameMessage();
-                        countdownMessage.setType("Countdown");
+                        countdownMessage.setType(GameMessage.Type.COUNTDOWN);
                         for (int i = 3; i >= 0; i--) {
                             countdownMessage.setPayloadInteger(i);
                             sendMessageToPlayer(gson.toJson(countdownMessage), player1);
@@ -88,7 +88,7 @@ public class MyGameBackendImpl extends AbstractGameBackend implements MyGameBack
         player2.setGameId(null);
         if (winner != null) { //send Win message To other player if he / she already joined.
             GameMessage winBecauseLeaveMessage = new GameMessage();
-            winBecauseLeaveMessage.setType("WinBecauseLeave");
+            winBecauseLeaveMessage.setType(GameMessage.Type.WIN_BECAUSE_LEAVE);
             winBecauseLeaveMessage.setStatus(GameMessage.Status.OK);
             sendMessageToPlayer(gson.toJson(winBecauseLeaveMessage, GameMessage.class), winner);
         }
@@ -101,22 +101,22 @@ public class MyGameBackendImpl extends AbstractGameBackend implements MyGameBack
         try {
             GameMessage gameMessage = gson.fromJson(message.getContent(), GameMessage.class);
             if (gameMessage.getType() != null) {
-                if (gameMessage.getType().equals("Movement")) {
+                if (gameMessage.getType() == GameMessage.Type.MOVE) {
                     Player player = (message.getPlayer() == player1) ? player2 : player1;
                     if (player != null) {
                         gameMessage.setAuthentication(null);
                         sendMessageToPlayer(gson.toJson(gameMessage), player);
                     }
-                } else if (gameMessage.getType().equals("endGame")) {
+                } else if (gameMessage.getType() == GameMessage.Type.END_GAME) {
                     message.getPlayer().setScore(gameMessage.getPayloadInteger());
                     GameMessage scoreRequest = new GameMessage();
-                    scoreRequest.setType("scoreRequest");
+                    scoreRequest.setType(GameMessage.Type.SCORE_REQUEST);
                     scoreRequest.setStatus(GameMessage.Status.OK);
                     sendMessageToPlayer(gson.toJson(scoreRequest), message.getPlayer() == player1 ? player2 : player1);
-                } else if (gameMessage.getType().equals("scoreReport")) {
+                } else if (gameMessage.getType() == GameMessage.Type.SCORE_REPORT) {
                     message.getPlayer().setScore(gameMessage.getPayloadInteger());
                     GameMessage winnerEvaluation = new GameMessage();
-                    winnerEvaluation.setType("WinnerEvaluation");
+                    winnerEvaluation.setType(GameMessage.Type.WINNER_EVALUATION);
                     ArrayList<String> scores = new ArrayList<>();
                     scores.add(player1.getScore().toString());
                     scores.add(player2.getScore().toString());
