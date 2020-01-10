@@ -92,7 +92,9 @@ public class MyGameBackendImpl extends AbstractGameBackend implements MyGameBack
         Player winner = (player == player1) ? player2 : player1;
         log.info("Player {} has quited.", player.getName());
         player1.setGameId(null);
-        player2.setGameId(null);
+        if (player2 != null) {
+            player2.setGameId(null);
+        }
         if (winner != null) { //send Win message To other player if he / she already joined.
             log.debug("There was another player {} in the game, informing him about leaving of the other one", winner.getName());
             GameMessage winBecauseLeaveMessage = new GameMessage();
