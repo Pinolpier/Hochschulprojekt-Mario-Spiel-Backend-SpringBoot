@@ -33,6 +33,10 @@ public class MyGameBackendImpl extends AbstractGameBackend implements MyGameBack
     public void onInit() {
     }
 
+    /**
+     * @param player the player who joins the game. This parameter is never null when the method is invoked externally.
+     * @return wheter the player could be joined to the game. {@code false} only if the game is full meaning 2 players already joined.
+     */
     @Override
     public boolean onPlayerJoined(@NotNull Player player) {
         GameMessage gameMessage = new GameMessage();
@@ -79,6 +83,9 @@ public class MyGameBackendImpl extends AbstractGameBackend implements MyGameBack
         }
     }
 
+    /**
+     * @param player the player who leaves the game. This parameter is never null when the method is invoked externally.
+     */
     @Override
     public void onPlayerLeft(@NotNull Player player) {
         String gameID = player.getGameId();
@@ -95,6 +102,13 @@ public class MyGameBackendImpl extends AbstractGameBackend implements MyGameBack
         quitGame(gameID);
     }
 
+    /**
+     * This method handles messages from players to their games.
+     * E.g. cheating is tested when a {@link GameMessage.Type} is {@code MOVE} and if no suspicious behaviour has been detected message is forwarded to other player
+     * Also ending a game is handled here including requesting the others players score and evaluating the winner!
+     *
+     * @param message the Message that has been received from a player for this game.
+     */
     @Override
     public void onMessageFromPlayer(@NotNull Message message) {
         log.debug("Message received from {} with text {}", message.getPlayer().getName(), message.getContent());

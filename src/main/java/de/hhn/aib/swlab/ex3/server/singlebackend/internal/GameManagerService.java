@@ -55,12 +55,19 @@ public class GameManagerService {
     }
 
 
-
+    /**
+     * @param webSocketSession the websocket session that just has been connected
+     */
     public void passJoinedMessageToGame(WebSocketSession webSocketSession) {
         log.info("Connected player with session id {}", webSocketSession.getId());
         this.sessionsNotAuthenticated.add(webSocketSession);
     }
 
+    /**
+     * Handles when a player disconnected and in case player was in a game sends a message about Winning because of Disconnect to the other player
+     *
+     * @param webSocketSession the webscocketSession that lost connection
+     */
     public void passLeftMessageToGame(WebSocketSession webSocketSession) {
         Player player = this.webSocketSessionToPlayer.get(webSocketSession);
         if (player != null) { //if player "exists and already joined a game - players could also just be logged in but not in a game (e.g. staying in the main menu)
@@ -101,6 +108,15 @@ public class GameManagerService {
         // ignore
     }
 
+    /**
+     * handels messaes - either forwards them to the game or
+     * - handles Login at the websocketService
+     * - manages the gameLobby representation and handles requests for gatting the lobby
+     * - manages requests to join games and sends corresponding answers back. If needed a game is created
+     *
+     * @param message
+     * @param webSocketSession
+     */
     public void passMessageToGame(String message, WebSocketSession webSocketSession) {
         log.info("received the following message from {}: {}", webSocketSession, message);
         if (sessionsNotAuthenticated.contains(webSocketSession)) {
@@ -215,6 +231,10 @@ public class GameManagerService {
         }
     }
 
+    /**
+     * @param message The message to send
+     * @param player  The player to send a message to
+     */
     public void passMessageToPlayer(String message, Player player) {
         //log.info("passMessageToPlayer has been called. Message is null? " + (message == null) + " Player is null? " + (player == null));
         if (message != null) {
@@ -251,6 +271,11 @@ public class GameManagerService {
         }
     }
 
+    /**
+     * Kills the game on the server if one player has won because of QUITTING, CHEATING, DYING or FINISHING of one player
+     *
+     * @param gameID for identification of the game
+     */
     public void quitGame(String gameID) {
         this.backendToScheduledFuture.get(gameID).cancel(false);
         this.backendToScheduledFuture.remove(gameID);
