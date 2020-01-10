@@ -22,4 +22,8 @@ public interface Player {
     float getPositionY();
 
     long getPostionTime();
+
+    boolean isCheatInitalized();
+
+    void setCheatInitalized(boolean cheatInitalized);
 }

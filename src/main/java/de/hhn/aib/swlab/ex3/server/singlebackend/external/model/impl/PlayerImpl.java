@@ -14,6 +14,7 @@ public class PlayerImpl implements Player {
     private Integer score;
     private float x, y;
     private long timeSet;
+    private boolean cheatInitalized = false;
 
     @Override
     public boolean equals(Object o) {
@@ -49,5 +50,13 @@ public class PlayerImpl implements Player {
     @Override
     public long getPostionTime() {
         return timeSet;
+    }
+
+    public boolean isCheatInitalized() {
+        return cheatInitalized;
+    }
+
+    public void setCheatInitalized(boolean cheatInitalized) {
+        this.cheatInitalized = cheatInitalized;
     }
 }

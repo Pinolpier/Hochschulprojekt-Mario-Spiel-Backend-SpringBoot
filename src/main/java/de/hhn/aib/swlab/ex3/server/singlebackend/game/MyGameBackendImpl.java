@@ -125,10 +125,11 @@ public class MyGameBackendImpl extends AbstractGameBackend implements MyGameBack
                         long newTime = System.currentTimeMillis();
                         int timeDifference = (int) (newTime - oldTime);
                         double distance = Math.sqrt(Math.pow((x - oldX), 2) + Math.pow((y - oldY), 2));
+
                         //theoretical maximum distance is maximum speed / 1000 * timeDifferenceInMilliseconds:
                         //for safety a buffering factor of 50 will be used
                         //factor 20 was used first, but was not enough. facor 50 secound use was not enough as well!
-                        if (distance > (0.002 * timeDifference) * 100000) {
+                        if ((distance > (0.002 * timeDifference) * 50) && message.getPlayer().isCheatInitalized()) {
                             log.warn("Cheat has been deteced by {}, distance travelled was {} in time {}", message.getPlayer().getName(), distance, timeDifference);
                             //cheat has been detected - way too fast movement
                             GameMessage cheatMessage = new GameMessage();
@@ -143,6 +144,7 @@ public class MyGameBackendImpl extends AbstractGameBackend implements MyGameBack
                             quitGame(gameID);
                         } else {
                             message.getPlayer().setPosition(x, y, System.currentTimeMillis());
+                            message.getPlayer().setCheatInitalized(true);
                             Player player = (message.getPlayer() == player1) ? player2 : player1;
                             if (player != null) {
                                 gameMessage.setAuthentication(null);
