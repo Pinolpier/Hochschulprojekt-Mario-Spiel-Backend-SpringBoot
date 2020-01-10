@@ -99,9 +99,13 @@ public class GameManagerService {
 //                    this.games.remove(gameID);
 //                }
             }
-            this.playerToWebSocketSession.remove(player);
-            this.webSocketSessionToPlayer.remove(webSocketSession);
-            log.info("Logged out player with username: {}", player.getName());
+            try {
+                this.playerToWebSocketSession.remove(player);
+                this.webSocketSessionToPlayer.remove(webSocketSession);
+            } catch (NullPointerException nex) {
+                log.error("NullPointerException while removing player websocketsession Zuordnung");
+            }
+            log.debug("Logged out player with username: {}", player.getName());
             player = null;
         }
         // else: player not really joined the game (e.g. authorization failed)
@@ -282,6 +286,6 @@ public class GameManagerService {
         this.backendToScheduledFuture.remove(gameID);
         this.games.remove(gameID);
         availableGames.remove(gameID);
-        log.info("Deleted the game with gameID {}", gameID);
+        log.debug("Deleted the game with gameID {}", gameID);
     }
 }
