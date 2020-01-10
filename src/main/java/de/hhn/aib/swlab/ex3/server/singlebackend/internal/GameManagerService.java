@@ -286,6 +286,6 @@ public class GameManagerService {
         this.backendToScheduledFuture.remove(gameID);
         this.games.remove(gameID);
         availableGames.remove(gameID);
-        log.debug("Deleted the game with gameID {}", gameID);
+        log.warn("Deleted the game with gameID {}", gameID);
     }
 }
