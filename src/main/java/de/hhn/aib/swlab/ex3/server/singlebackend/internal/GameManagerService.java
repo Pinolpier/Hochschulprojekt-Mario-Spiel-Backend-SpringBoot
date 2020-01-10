@@ -139,6 +139,7 @@ public class GameManagerService {
                             Player player = optionalPlayer.get();
                             log.info("Login {} succeeded, token valid, player's username is: {}", webSocketSession.getId(), player.getName());
                             GameMessage response = new GameMessage();
+                            quitGame(player.getName());
                             response.setStatus(GameMessage.Status.OK);
                             response.setType(GameMessage.Type.LOGIN_ANSWER);
                             webSocketSession.sendMessage(new TextMessage(gson.toJson(response)));
