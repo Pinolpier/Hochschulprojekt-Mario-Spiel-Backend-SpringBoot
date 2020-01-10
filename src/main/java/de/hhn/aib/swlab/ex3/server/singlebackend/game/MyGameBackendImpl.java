@@ -128,7 +128,7 @@ public class MyGameBackendImpl extends AbstractGameBackend implements MyGameBack
                         //theoretical maximum distance is maximum speed / 1000 * timeDifferenceInMilliseconds:
                         //for safety a buffering factor of 50 will be used
                         //factor 20 was used first, but was not enough. facor 50 secound use was not enough as well!
-                        if (distance > (0.002 * timeDifference) * 1000) {
+                        if (distance > (0.002 * timeDifference) * 100000) {
                             //cheat has been detected - way too fast movement
                             GameMessage cheatMessage = new GameMessage();
                             cheatMessage.setType(GameMessage.Type.LOOSE_CHEAT);

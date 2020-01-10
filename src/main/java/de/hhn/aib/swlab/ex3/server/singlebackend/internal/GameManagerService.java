@@ -101,8 +101,8 @@ public class GameManagerService {
             }
             this.playerToWebSocketSession.remove(player);
             this.webSocketSessionToPlayer.remove(webSocketSession);
-            player = null;
             log.info("Logged out player with username: {}", player.getName());
+            player = null;
         }
         // else: player not really joined the game (e.g. authorization failed)
         // ignore
